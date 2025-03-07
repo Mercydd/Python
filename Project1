@@ -1,0 +1,108 @@
+import os
+import shutil
+import datetime
+
+def choose_opt():
+    name = input("Please enter your name: ").strip()
+    while not name:
+        print("Name cannot be empty. Please enter a valid name.")
+        name = input("Please enter your name: ").strip()
+    
+    print(f"Hi {name}, nice to meet you!")
+    
+    while True:
+        opt = input("This program includes 3 scripts. Choose one of them:\n1. Copy script\n2. Find file with extension\n3. Delete old file\nEnter 1, 2, or 3: ").strip()
+        
+        if opt == "1":
+            print("You chose Copy script\nPLEASE USE FULL PATH TO FILE")
+            file_name = get_valid_path("Write path to file: ", is_file=True)
+            dest = get_valid_path("Write path to destination directory: ", is_dir=True)
+            copy_file(file_name, dest)
+        elif opt == "2":
+            print("You chose Find file with extension script\nPLEASE USE FULL PATH TO DIRECTORY")
+            dir_path = get_valid_path("Write path of directory: ", is_dir=True)
+            ext = get_valid_extension()
+            result = find_file_extension(dir_path, ext)
+            if result:
+                print("Your files:")
+                for i in result:
+                    print(i)
+            else:
+                print("No files found with that extension.")
+        elif opt == "3":
+            print("You chose Delete old file script\nPLEASE USE FULL PATH TO DIRECTORY")
+            dir_path = get_valid_path("Write path of directory: ", is_dir=True)
+            days = get_valid_days()
+            del_old_file(dir_path, days)
+        else:
+            print("Invalid option. Please enter 1, 2, or 3.")
+
+def get_valid_path(prompt, is_file=False, is_dir=False):
+    while True:
+        path = input(prompt).strip()
+        if os.path.exists(path):
+            if is_file and not os.path.isfile(path):
+                print("The path exists, but it's not a file. Try again.")
+            elif is_dir and not os.path.isdir(path):
+                print("The path exists, but it's not a directory. Try again.")
+            else:
+                return path
+        else:
+            print("Invalid path. Please enter a correct path.")
+
+def get_valid_extension():
+    while True:
+        ext = input("Write file extension (without dot, e.g., txt): ").strip()
+        if ext and not any(c in ext for c in " /\\:"):
+            return ext
+        print("Invalid extension. Please enter a valid file extension.")
+
+def get_valid_days():
+    while True:
+        try:
+            days = float(input("Write the number of days: ").strip())
+            if days >= 0:
+                return days
+            print("Number of days cannot be negative. Try again.")
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+
+def copy_file(source_file, targ_dir):
+    try:
+        file_name = os.path.basename(source_file)
+        destination = os.path.join(targ_dir, file_name)
+        shutil.copy(source_file, destination)
+        print(f"Your file {source_file} was successfully copied to {destination}")
+    except Exception as e:
+        print(f"An error occurred while copying the file: {e}")
+
+def find_file_extension(directory, extension):
+    match = []
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith("." + extension):
+                match.append(os.path.join(root, file))
+    return match
+
+def del_old_file(directory, days):
+    sec_transf = days * 24 * 60 * 60
+    now = datetime.datetime.now()
+    
+    for file in os.listdir(directory):
+        file_path = os.path.join(directory, file)
+        if os.path.isfile(file_path):
+            try:
+                mod_time = os.path.getmtime(file_path)
+                mod_datetime = datetime.datetime.fromtimestamp(mod_time)
+                time_diff = (now - mod_datetime).total_seconds()
+                
+                if time_diff >= sec_transf:
+                    os.remove(file_path)
+                    print(f"Your file: {file_path} has been deleted!\n")
+                else:
+                    print(f"File {file_path} is not older than {days} days.\n")
+            except Exception as e:
+                print(f"An error occurred while deleting the file {file_path}: {e}\n")
+
+if __name__ == "__main__":
+    choose_opt()
