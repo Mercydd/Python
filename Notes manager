@@ -1,0 +1,75 @@
+import json 
+import os 
+
+def load_notes():
+    if os.path.exists("notes.json"):  
+        with open("notes.json", "r", encoding="utf-8") as file:
+            return json.load(file)  
+    return {}  
+
+
+def save_notes(notes):
+    with open("notes.json", "w", encoding="utf-8") as file:
+        json.dump(notes, file, indent=4, ensure_ascii=False) 
+
+
+def add_note():
+    title = input("Enter note title: ").strip()  
+    content = input("Enter note content: ").strip()
+
+    if not title or not content:
+        print("Title and content cannot be empty!")
+        return
+
+    notes = load_notes()  
+    notes[title] = content 
+    save_notes(notes)
+    print("Note saved successfully!")
+
+
+def view_notes():
+    notes = load_notes() 
+    if not notes:  
+        print("No notes found.")
+        return
+
+    print("\nYour Notes:")
+    for title, content in notes.items():  
+        print(f"\nTitle: {title}\nContent: {content}\n" + "-" * 30)
+
+
+def delete_note():
+    notes = load_notes()
+    if not notes: 
+        print("No notes to delete.")
+        return
+
+    title = input("Enter the title of the note to delete: ").strip() 
+    if title in notes:  
+        del notes[title]  
+        save_notes(notes)  
+        print("Note deleted successfully!")
+    else:
+        print("Note not found!")
+
+
+def main():
+    while True:
+        print("\n1. Add Note\n2. View Notes\n3. Delete Note\n4. Exit") 
+        choice = input("Choose an option: ").strip()  
+
+        if choice == "1":
+            add_note()  
+        elif choice == "2":
+            view_notes()  
+        elif choice == "3":
+            delete_note() 
+        elif choice == "4":
+            print("Goodbye!")  
+            break
+        else:
+            print("Invalid choice, please try again.")  
+
+
+if __name__ == "__main__":  
+    main()  
